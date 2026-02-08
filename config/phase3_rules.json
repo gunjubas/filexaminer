@@ -1,0 +1,109 @@
+{
+  "classes": [
+    "ephemeral / regenerable",
+    "derived but costly",
+    "user content",
+    "identity / trust",
+    "unknown / mixed"
+  ],
+  "defaults": {
+    "unknown_class": "unknown / mixed",
+    "directory_min_score": 6,
+    "file_min_score": 5,
+    "medium_confidence_margin": 2,
+    "high_confidence_score": 10,
+    "high_confidence_margin": 4
+  },
+  "directory_rules": [
+    {
+      "id": "dir_ephemeral_cache",
+      "class": "ephemeral / regenerable",
+      "weight": 7,
+      "path_regex": "/(\\.cache|Cache|tmp|Temp|node_modules|__pycache__|\\.npm|\\.cargo/registry)(/|$)",
+      "reason": "Path matches common regenerable cache or temporary directory patterns."
+    },
+    {
+      "id": "dir_ephemeral_dot_state",
+      "class": "ephemeral / regenerable",
+      "weight": 4,
+      "path_regex": "/\\.(thumbnails|cache|npm|yarn|pytest_cache)(/|$)",
+      "requires_dot_directory": 1,
+      "reason": "Hidden state/cache directory pattern suggests regenerable artifacts."
+    },
+    {
+      "id": "dir_derived_dev_build",
+      "class": "derived but costly",
+      "weight": 7,
+      "path_regex": "/(target|build|dist|\\.gradle|\\.m2|\\.venv|venv|\\.terraform|\\.rustup)(/|$)",
+      "reason": "Path matches derived build/runtime artifacts that may be expensive to recreate."
+    },
+    {
+      "id": "dir_derived_large_lowdiv",
+      "class": "derived but costly",
+      "weight": 4,
+      "path_regex": "/(Library|Application Support|Containers|Docker|VirtualBox|VM|cache)(/|$)",
+      "max_mime_diversity": 3,
+      "min_file_count": 20,
+      "reason": "Large low-diversity technical data directories often contain costly derived state."
+    },
+    {
+      "id": "dir_user_content_primary",
+      "class": "user content",
+      "weight": 8,
+      "path_regex": "/(Documents|Desktop|Downloads|Pictures|Photos|Videos|Music|Projects|Notes|Workspace|Archive)(/|$)",
+      "reason": "Path matches common personal content and authored data locations."
+    },
+    {
+      "id": "dir_user_content_creative",
+      "class": "user content",
+      "weight": 5,
+      "path_regex": "/(Writing|Manuscripts|Journals|Design|Assets|Media)(/|$)",
+      "reason": "Path pattern indicates authored or curated creative content."
+    },
+    {
+      "id": "dir_identity_credentials",
+      "class": "identity / trust",
+      "weight": 9,
+      "path_regex": "/(\\.ssh|\\.gnupg|\\.pki|\\.password-store|\\.aws|\\.kube|keychain|cert|certs|secrets)(/|$)",
+      "reason": "Path matches credential, key, certificate, or trust-anchor directories."
+    },
+    {
+      "id": "dir_identity_browser_profile",
+      "class": "identity / trust",
+      "weight": 6,
+      "path_regex": "/(\\.mozilla|\\.config/google-chrome|\\.config/chromium|\\.config/BraveSoftware)(/|$)",
+      "reason": "Browser profile directories encode identity/session/trust state."
+    }
+  ],
+  "file_rules": [
+    {
+      "id": "file_user_content_docs_media",
+      "class": "user content",
+      "weight": 6,
+      "mime_regex": "^(text/|image/|video/|audio/|application/pdf$)",
+      "path_regex": "/(Documents|Desktop|Downloads|Pictures|Photos|Videos|Music|Notes|Projects|Workspace)(/|$)",
+      "reason": "File MIME and path indicate authored or curated user content."
+    },
+    {
+      "id": "file_identity_keys",
+      "class": "identity / trust",
+      "weight": 8,
+      "path_regex": "(id_rsa|id_ed25519|known_hosts|authorized_keys|\\.pem$|\\.key$|\\.crt$|\\.p12$|\\.kdbx$)",
+      "reason": "Filename pattern indicates keys, certificates, or security-sensitive identity material."
+    },
+    {
+      "id": "file_ephemeral_runtime",
+      "class": "ephemeral / regenerable",
+      "weight": 6,
+      "path_regex": "/(tmp|Temp|\\.cache|__pycache__|node_modules)(/|$)",
+      "reason": "Runtime cache/temp path indicates regenerable file state."
+    },
+    {
+      "id": "file_derived_artifacts",
+      "class": "derived but costly",
+      "weight": 6,
+      "path_regex": "/(target|build|dist|\\.venv|venv|\\.gradle|\\.m2)(/|$)",
+      "reason": "Path indicates build or environment artifacts likely derived from source."
+    }
+  ]
+}

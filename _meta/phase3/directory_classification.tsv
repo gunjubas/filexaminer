@@ -1,0 +1,23 @@
+directory_path|classification|confidence|top_score|runner_up_score|score_margin|matched_rule_ids|explanation|review_required|file_count|total_size_bytes|oldest_file_date|newest_file_date|mime_diversity
+/.git|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|37|45786|2026-02-08|2026-02-08|5
+/.git/hooks|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|14|25879|2026-02-08|2026-02-08|2
+/.git/info|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|1|240|2026-02-08|2026-02-08|1
+/.git/logs|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|4|1435|2026-02-08|2026-02-08|1
+/.git/logs/refs|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|3|896|2026-02-08|2026-02-08|1
+/.git/logs/refs/heads|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|1|539|2026-02-08|2026-02-08|1
+/.git/logs/refs/remotes|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|2|357|2026-02-08|2026-02-08|1
+/.git/logs/refs/remotes/origin|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|2|357|2026-02-08|2026-02-08|1
+/.git/objects|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|9|17128|2026-02-08|2026-02-08|3
+/.git/objects/01|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|1|182|2026-02-08|2026-02-08|1
+/.git/objects/21|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|1|180|2026-02-08|2026-02-08|1
+/.git/objects/48|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|1|540|2026-02-08|2026-02-08|1
+/.git/objects/6f|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|1|171|2026-02-08|2026-02-08|1
+/.git/objects/87|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|1|722|2026-02-08|2026-02-08|1
+/.git/objects/cd|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|1|885|2026-02-08|2026-02-08|1
+/.git/objects/pack|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|3|14448|2026-02-08|2026-02-08|2
+/.git/refs|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|3|112|2026-02-08|2026-02-08|1
+/.git/refs/heads|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|1|41|2026-02-08|2026-02-08|1
+/.git/refs/remotes|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|2|71|2026-02-08|2026-02-08|1
+/.git/refs/remotes/origin|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|2|71|2026-02-08|2026-02-08|1
+/_meta|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|1|0|2026-02-08|2026-02-08|1
+/docs|unknown / mixed|low|0|0|0||insufficient evidence: top score below minimum threshold|1|1|1459|2026-02-08|2026-02-08|1
