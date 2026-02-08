@@ -1,0 +1,114 @@
+{
+  "defaults": {
+    "dry_run": true,
+    "unknown_class": "unknown / mixed",
+    "unknown_action": "ignore",
+    "output_action_on_no_rule": "ignore"
+  },
+  "confidence_rank": {
+    "low": 1,
+    "medium": 2,
+    "high": 3
+  },
+  "protected_classes": [
+    "user content",
+    "identity / trust"
+  ],
+  "preservation_policies": [
+    {
+      "id": "preserve_identity_roots",
+      "scope": "directory",
+      "path_regex": "/(\\.ssh|\\.gnupg|\\.pki|\\.password-store|\\.aws|\\.kube)(/|$)",
+      "reason": "Directory contains identity, key, or trust-anchor material."
+    },
+    {
+      "id": "preserve_security_files",
+      "scope": "file",
+      "path_regex": "(id_rsa|id_ed25519|authorized_keys|known_hosts|\\.pem$|\\.key$|\\.crt$|\\.p12$)",
+      "reason": "File appears to be credential, key, or certificate material."
+    },
+    {
+      "id": "preserve_personal_content_roots",
+      "scope": "directory",
+      "path_regex": "/(Documents|Desktop|Pictures|Photos|Videos|Music|Notes|Projects|Archive)(/|$)",
+      "reason": "Directory likely stores primary personal content."
+    }
+  ],
+  "directory_decision_rules": [
+    {
+      "id": "dir_ephemeral_high_conf_delete_candidate",
+      "classification": "ephemeral / regenerable",
+      "min_confidence": "high",
+      "min_file_count": 200,
+      "action": "delete directory",
+      "priority": 30,
+      "reason": "High-confidence regenerable directory with substantial volume; candidate for deletion in a later execution phase."
+    },
+    {
+      "id": "dir_ephemeral_medium_conf_quarantine_candidate",
+      "classification": "ephemeral / regenerable",
+      "min_confidence": "medium",
+      "action": "quarantine files",
+      "priority": 20,
+      "reason": "Regenerable directory should be validated via quarantine before any irreversible operation."
+    },
+    {
+      "id": "dir_derived_archive_candidate",
+      "classification": "derived but costly",
+      "min_confidence": "medium",
+      "action": "archive data",
+      "priority": 25,
+      "reason": "Derived but costly data should be archived for reproducibility and rollback safety."
+    },
+    {
+      "id": "dir_user_content_preserve",
+      "classification": "user content",
+      "min_confidence": "low",
+      "action": "ignore",
+      "priority": 100,
+      "reason": "User content requires explicit human intent and is not auto-targeted."
+    },
+    {
+      "id": "dir_identity_preserve",
+      "classification": "identity / trust",
+      "min_confidence": "low",
+      "action": "ignore",
+      "priority": 100,
+      "reason": "Identity and trust data is safety-critical and excluded from auto-removal."
+    }
+  ],
+  "file_decision_rules": [
+    {
+      "id": "file_ephemeral_quarantine_candidate",
+      "classification": "ephemeral / regenerable",
+      "min_confidence": "medium",
+      "action": "quarantine files",
+      "priority": 20,
+      "reason": "File appears regenerable; quarantine is a reversible validation step."
+    },
+    {
+      "id": "file_derived_archive_candidate",
+      "classification": "derived but costly",
+      "min_confidence": "medium",
+      "action": "archive data",
+      "priority": 20,
+      "reason": "Derived file should be archived rather than discarded."
+    },
+    {
+      "id": "file_user_content_preserve",
+      "classification": "user content",
+      "min_confidence": "low",
+      "action": "ignore",
+      "priority": 100,
+      "reason": "User-authored content is not auto-acted on."
+    },
+    {
+      "id": "file_identity_preserve",
+      "classification": "identity / trust",
+      "min_confidence": "low",
+      "action": "ignore",
+      "priority": 100,
+      "reason": "Identity and trust files are always preserved."
+    }
+  ]
+}

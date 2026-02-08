@@ -1,0 +1,63 @@
+Phase 4 Example Preview
+=======================
+
+[proposed_actions.tsv]
+scope|target_path|proposed_action|classification|confidence|matched_rule_id|explanation|preservation_override|review_required|dry_run|evidence_size_bytes|evidence_date|evidence_mime|parent_directory|evidence_file_count|evidence_total_size_bytes|evidence_oldest_date|evidence_newest_date|evidence_mime_diversity
+directory|/.git|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed|0|1|true|||||37|45786|2026-02-08|2026-02-08|5
+directory|/.git/hooks|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed|0|1|true|||||14|25879|2026-02-08|2026-02-08|2
+directory|/.git/info|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed|0|1|true|||||1|240|2026-02-08|2026-02-08|1
+directory|/.git/logs|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed|0|1|true|||||4|1435|2026-02-08|2026-02-08|1
+directory|/.git/logs/refs|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed|0|1|true|||||3|896|2026-02-08|2026-02-08|1
+directory|/.git/logs/refs/heads|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed|0|1|true|||||1|539|2026-02-08|2026-02-08|1
+directory|/.git/logs/refs/remotes|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed|0|1|true|||||2|357|2026-02-08|2026-02-08|1
+directory|/.git/logs/refs/remotes/origin|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed|0|1|true|||||2|357|2026-02-08|2026-02-08|1
+directory|/.git/objects|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed|0|1|true|||||9|17128|2026-02-08|2026-02-08|3
+
+[action_summary.tsv]
+scope|proposed_action|classification|confidence|item_count
+directory|ignore|unknown / mixed|low|22
+file|ignore|unknown / mixed|low|39
+
+[review_required.tsv]
+scope|target_path|proposed_action|classification|confidence|matched_rule_id|explanation
+directory|/.git|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed
+directory|/.git/hooks|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed
+directory|/.git/info|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed
+directory|/.git/logs|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed
+directory|/.git/logs/refs|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed
+directory|/.git/logs/refs/heads|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed
+directory|/.git/logs/refs/remotes|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed
+directory|/.git/logs/refs/remotes/origin|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed
+directory|/.git/objects|ignore|unknown / mixed|low|policy.unknown|classification is unknown / mixed; no action proposed
+
+[human_summary.md]
+# Phase 4 Dry-Run Decision Summary
+
+- Total proposed items: 61
+- Non-ignore proposals: 0
+- Review-required items: 61
+
+## Policy Guarantees
+- Dry-run only: no filesystem mutation performed.
+- Unknown classification yields no action (ignore).
+- user content and identity / trust are protected from auto-delete.
+- Preservation policies override all rule proposals.
+
+## Top Proposed Actions (non-ignore)
+
+## Review Queue Sample
+- [directory] /.git :: classification is unknown / mixed; no action proposed
+- [directory] /.git/hooks :: classification is unknown / mixed; no action proposed
+- [directory] /.git/info :: classification is unknown / mixed; no action proposed
+- [directory] /.git/logs :: classification is unknown / mixed; no action proposed
+- [directory] /.git/logs/refs :: classification is unknown / mixed; no action proposed
+- [directory] /.git/logs/refs/heads :: classification is unknown / mixed; no action proposed
+- [directory] /.git/logs/refs/remotes :: classification is unknown / mixed; no action proposed
+- [directory] /.git/logs/refs/remotes/origin :: classification is unknown / mixed; no action proposed
+- [directory] /.git/objects :: classification is unknown / mixed; no action proposed
+- [directory] /.git/objects/01 :: classification is unknown / mixed; no action proposed
+- [directory] /.git/objects/21 :: classification is unknown / mixed; no action proposed
+- [directory] /.git/objects/48 :: classification is unknown / mixed; no action proposed
+- [directory] /.git/objects/6f :: classification is unknown / mixed; no action proposed
+- [directory] /.git/objects/87 :: classification is unknown / mixed; no action proposed
+- [directory] /.git/objects/cd :: classification is unknown / mixed; no action proposed
