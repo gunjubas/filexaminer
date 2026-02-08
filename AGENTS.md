@@ -6,6 +6,7 @@ This repository is a Bash-based pipeline for filesystem analysis and cleanup.
 - `phase2.sh`: canonical Phase 2 discovery/enrichment entrypoint; writes reports in `_meta/phase2/`.
 - `phase3.sh`: semantic classification entrypoint; writes reports in `_meta/phase3/`.
 - `phase4.sh`: dry-run decision entrypoint; writes proposals in `_meta/phase4/`.
+- `phase5.sh`: optional action execution entrypoint; executes approved plans and logs to `_meta/phase5/`.
 - `phase1_dirs.sh`: legacy compatibility wrapper that delegates to `phase2.sh`.
 - `README.md`: short project purpose statement.
 
@@ -17,9 +18,11 @@ No build system is required; scripts run directly with Bash.
 - `bash phase2.sh`: run read-only discovery and enrichment (expects `_meta/files.index`).
 - `bash phase3.sh`: run semantic classification only (expects Phase 1 + Phase 2 outputs).
 - `bash phase4.sh`: run dry-run decision proposals only (expects Phase 1 + Phase 2 + Phase 3 outputs).
+- `bash phase5.sh --plan _meta/phase4/approved_action_plan.jsonl`: simulate approved execution plan (no mutation).
+- `FILEXMINER_ENABLE_PHASE5=1 bash phase5.sh --execute --plan ...`: execute approved actions explicitly.
 - `bash phase1_dirs.sh`: legacy alias for `phase2.sh`.
-- `bash -n phase1.sh phase1_dirs.sh phase2.sh phase3.sh phase4.sh`: syntax check before commit.
-- `shellcheck phase1.sh phase1_dirs.sh phase2.sh phase3.sh phase4.sh`: static linting (install `shellcheck` if missing).
+- `bash -n phase1.sh phase1_dirs.sh phase2.sh phase3.sh phase4.sh phase5.sh`: syntax check before commit.
+- `shellcheck phase1.sh phase1_dirs.sh phase2.sh phase3.sh phase4.sh phase5.sh`: static linting (install `shellcheck` if missing).
 
 ## Coding Style & Naming Conventions
 - Use Bash with `#!/usr/bin/env bash` and `set -euo pipefail`.
