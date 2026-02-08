@@ -14,7 +14,7 @@ Phase 3 consumes immutable evidence (`_meta/files.index`) plus Phase 2 discovery
 - No mutation of `_meta/files.index`.
 
 ## Rule Source
-Rules are configuration-driven in `config/phase3_rules.json`:
+Rules are configuration-driven in `config/phase3_rules.yaml`:
 - Classes:
   - `ephemeral / regenerable`
   - `derived but costly`
@@ -22,7 +22,8 @@ Rules are configuration-driven in `config/phase3_rules.json`:
   - `identity / trust`
   - `unknown / mixed`
 - Thresholds and confidence policy live under `defaults`.
-- Match logic is explicit through regex and optional constraints.
+- Match logic is regex-free in the rule file: human-readable term lists are used for path terms, filename terms/suffixes, and MIME prefixes/exact values.
+- Rule templates are organized as term catalogs and reused via YAML anchors for readability.
 
 ## Run
 ```bash

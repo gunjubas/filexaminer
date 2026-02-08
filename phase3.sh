@@ -8,7 +8,7 @@ INDEX_FILE="_meta/files.index"
 PHASE2_DIR="_meta/phase2"
 DIR_STATS_FILE="$PHASE2_DIR/directory_stats.tsv"
 DIRS_ALL_FILE="$PHASE2_DIR/directories.all.tsv"
-RULES_FILE="config/phase3_rules.json"
+RULES_FILE="config/phase3_rules.yaml"
 OUT_DIR="_meta/phase3"
 
 DIR_CLASS_FILE="$OUT_DIR/directory_classification.tsv"
@@ -27,6 +27,7 @@ DIR_CLASS_RAW="$TMP_DIR/directory_classification.raw"
 FILE_CLASS_RAW="$TMP_DIR/file_classification.raw"
 SUMMARY_RAW="$TMP_DIR/classification_summary.raw"
 REVIEW_RAW="$TMP_DIR/review_queue.raw"
+DEFAULTS_TSV="$TMP_DIR/defaults.tsv"
 
 echo "[*] Phase 3 starting (semantic classification, no actions)"
 date
@@ -39,46 +40,110 @@ for required in "$INDEX_FILE" "$DIR_STATS_FILE" "$DIRS_ALL_FILE" "$RULES_FILE"; 
   fi
 done
 
-if ! command -v jq >/dev/null 2>&1; then
-  echo "[!] jq is required to parse rule configuration: $RULES_FILE"
+if ! command -v yq >/dev/null 2>&1; then
+  echo "[!] yq is required to parse YAML rules: $RULES_FILE"
   exit 1
 fi
 
 mkdir -p "$OUT_DIR"
 
 echo "[*] Loading rule configuration..."
-jq -r '.classes[]' "$RULES_FILE" > "$CLASSES_TSV"
-jq -r '
-  .directory_rules[]
-  | [
-      .id,
-      .class,
-      (.weight|tostring),
-      (.path_regex // ""),
-      (.min_file_count // ""),
-      (.max_mime_diversity // ""),
-      (.requires_dot_directory // ""),
-      .reason
-    ] | @tsv
-' "$RULES_FILE" > "$DIR_RULES_TSV"
-jq -r '
-  .file_rules[]
-  | [
-      .id,
-      .class,
-      (.weight|tostring),
-      (.path_regex // ""),
-      (.mime_regex // ""),
-      .reason
-    ] | @tsv
-' "$RULES_FILE" > "$FILE_RULES_TSV"
+yq -r '.classes[]' "$RULES_FILE" > "$CLASSES_TSV"
+{
+  echo "unknown_class|$(yq -r '.defaults.unknown_class' "$RULES_FILE")"
+  echo "directory_min_score|$(yq -r '.defaults.directory_min_score' "$RULES_FILE")"
+  echo "file_min_score|$(yq -r '.defaults.file_min_score' "$RULES_FILE")"
+  echo "medium_confidence_margin|$(yq -r '.defaults.medium_confidence_margin' "$RULES_FILE")"
+  echo "high_confidence_score|$(yq -r '.defaults.high_confidence_score' "$RULES_FILE")"
+  echo "high_confidence_margin|$(yq -r '.defaults.high_confidence_margin' "$RULES_FILE")"
+} > "$DEFAULTS_TSV"
 
-UNKNOWN_CLASS="$(jq -r '.defaults.unknown_class' "$RULES_FILE")"
-DIR_MIN_SCORE="$(jq -r '.defaults.directory_min_score' "$RULES_FILE")"
-FILE_MIN_SCORE="$(jq -r '.defaults.file_min_score' "$RULES_FILE")"
-MEDIUM_MARGIN="$(jq -r '.defaults.medium_confidence_margin' "$RULES_FILE")"
-HIGH_SCORE="$(jq -r '.defaults.high_confidence_score' "$RULES_FILE")"
-HIGH_MARGIN="$(jq -r '.defaults.high_confidence_margin' "$RULES_FILE")"
+> "$DIR_RULES_TSV"
+dir_rule_count="$(yq -r '.directory_rules | length' "$RULES_FILE")"
+for ((i = 0; i < dir_rule_count; i++)); do
+  rid="$(yq -r ".directory_rules[$i].id" "$RULES_FILE")"
+  rclass="$(yq -r ".directory_rules[$i].class" "$RULES_FILE")"
+  rweight="$(yq -r ".directory_rules[$i].weight" "$RULES_FILE")"
+  rminf="$(yq -r ".directory_rules[$i].min_file_count // \"\"" "$RULES_FILE")"
+  rmaxm="$(yq -r ".directory_rules[$i].max_mime_diversity // \"\"" "$RULES_FILE")"
+  rdot="$(yq -r ".directory_rules[$i].requires_dot_directory // \"\"" "$RULES_FILE")"
+  rreason="$(yq -r ".directory_rules[$i].reason" "$RULES_FILE")"
+
+  rterms_csv=""
+  while IFS= read -r ref; do
+    [[ -z "$ref" ]] && continue
+    while IFS= read -r term; do
+      [[ -z "$term" ]] && continue
+      if [[ -z "$rterms_csv" ]]; then
+        rterms_csv="$term"
+      else
+        rterms_csv="$rterms_csv,$term"
+      fi
+    done < <(yq -r ".directory_term_catalog[\"$ref\"][]?" "$RULES_FILE")
+  done < <(yq -r ".directory_rules[$i].path_template_refs[]?" "$RULES_FILE")
+
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$rid" "$rclass" "$rweight" "$rterms_csv" "$rminf" "$rmaxm" "$rdot" "$rreason" >> "$DIR_RULES_TSV"
+done
+
+> "$FILE_RULES_TSV"
+file_rule_count="$(yq -r '.file_rules | length' "$RULES_FILE")"
+for ((i = 0; i < file_rule_count; i++)); do
+  rid="$(yq -r ".file_rules[$i].id" "$RULES_FILE")"
+  rclass="$(yq -r ".file_rules[$i].class" "$RULES_FILE")"
+  rweight="$(yq -r ".file_rules[$i].weight" "$RULES_FILE")"
+  rreason="$(yq -r ".file_rules[$i].reason" "$RULES_FILE")"
+
+  path_terms_csv=""
+  while IFS= read -r ref; do
+    [[ -z "$ref" ]] && continue
+    while IFS= read -r term; do
+      [[ -z "$term" ]] && continue
+      if [[ -z "$path_terms_csv" ]]; then
+        path_terms_csv="$term"
+      else
+        path_terms_csv="$path_terms_csv,$term"
+      fi
+    done < <(yq -r ".file_path_term_catalog[\"$ref\"][]?" "$RULES_FILE")
+  done < <(yq -r ".file_rules[$i].path_template_refs[]?" "$RULES_FILE")
+
+  filename_terms_csv=""
+  while IFS= read -r ref; do
+    [[ -z "$ref" ]] && continue
+    while IFS= read -r term; do
+      [[ -z "$term" ]] && continue
+      if [[ -z "$filename_terms_csv" ]]; then
+        filename_terms_csv="$term"
+      else
+        filename_terms_csv="$filename_terms_csv,$term"
+      fi
+    done < <(yq -r ".file_name_term_catalog[\"$ref\"][]?" "$RULES_FILE")
+  done < <(yq -r ".file_rules[$i].filename_template_refs[]?" "$RULES_FILE")
+
+  filename_suffix_csv=""
+  while IFS= read -r ref; do
+    [[ -z "$ref" ]] && continue
+    while IFS= read -r term; do
+      [[ -z "$term" ]] && continue
+      if [[ -z "$filename_suffix_csv" ]]; then
+        filename_suffix_csv="$term"
+      else
+        filename_suffix_csv="$filename_suffix_csv,$term"
+      fi
+    done < <(yq -r ".file_suffix_catalog[\"$ref\"][]?" "$RULES_FILE")
+  done < <(yq -r ".file_rules[$i].suffix_template_refs[]?" "$RULES_FILE")
+
+  mime_prefix_csv="$(yq -r ".file_rules[$i].mime_prefixes // [] | join(\",\")" "$RULES_FILE")"
+  mime_equals_csv="$(yq -r ".file_rules[$i].mime_equals // [] | join(\",\")" "$RULES_FILE")"
+
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$rid" "$rclass" "$rweight" "$path_terms_csv" "$filename_terms_csv" "$filename_suffix_csv" "$mime_prefix_csv" "$mime_equals_csv" "$rreason" >> "$FILE_RULES_TSV"
+done
+
+UNKNOWN_CLASS="$(awk -F'|' '$1=="unknown_class"{print $2}' "$DEFAULTS_TSV")"
+DIR_MIN_SCORE="$(awk -F'|' '$1=="directory_min_score"{print $2}' "$DEFAULTS_TSV")"
+FILE_MIN_SCORE="$(awk -F'|' '$1=="file_min_score"{print $2}' "$DEFAULTS_TSV")"
+MEDIUM_MARGIN="$(awk -F'|' '$1=="medium_confidence_margin"{print $2}' "$DEFAULTS_TSV")"
+HIGH_SCORE="$(awk -F'|' '$1=="high_confidence_score"{print $2}' "$DEFAULTS_TSV")"
+HIGH_MARGIN="$(awk -F'|' '$1=="high_confidence_margin"{print $2}' "$DEFAULTS_TSV")"
 
 echo "[*] Directory-level classification..."
 awk -F'|' \
@@ -96,6 +161,17 @@ function append_value(base, value, sep,    out) {
   if (out == "") return value
   return out sep value
 }
+function csv_contains(haystack, csv,    n, i, parts, needle, h) {
+  if (csv == "") return 1
+  h = tolower(haystack)
+  n = split(csv, parts, ",")
+  for (i = 1; i <= n; i++) {
+    needle = tolower(parts[i])
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", needle)
+    if (needle != "" && index(h, needle) > 0) return 1
+  }
+  return 0
+}
 BEGIN {
   while ((getline line < class_file) > 0) {
     class_name = line
@@ -108,7 +184,7 @@ BEGIN {
     rid[++rule_count] = a[1]
     rclass[rule_count] = a[2]
     rweight[rule_count] = a[3] + 0
-    rpath[rule_count] = a[4]
+    rterms[rule_count] = a[4]
     rminf[rule_count] = a[5]
     rmaxm[rule_count] = a[6]
     rdot[rule_count] = a[7]
@@ -146,7 +222,7 @@ FNR == 1 { next }
     c = rclass[i]
     ok = 1
 
-    if (rpath[i] != "" && path !~ rpath[i]) ok = 0
+    if (!csv_contains(path, rterms[i])) ok = 0
     if (rminf[i] != "" && file_count < (rminf[i] + 0)) ok = 0
     if (rmaxm[i] != "" && mime_div > (rmaxm[i] + 0)) ok = 0
     if (rdot[i] != "" && is_dot[path] != (rdot[i] + 0)) ok = 0
@@ -240,6 +316,55 @@ function parent_dir(path,    n, parts, i, out) {
   if (out == "") out = "/"
   return out
 }
+function csv_contains(haystack, csv,    n, i, parts, needle, h) {
+  if (csv == "") return 1
+  h = tolower(haystack)
+  n = split(csv, parts, ",")
+  for (i = 1; i <= n; i++) {
+    needle = tolower(parts[i])
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", needle)
+    if (needle != "" && index(h, needle) > 0) return 1
+  }
+  return 0
+}
+function csv_suffix(haystack, csv,    n, i, parts, s, hlen, slen, h) {
+  if (csv == "") return 1
+  h = tolower(haystack)
+  hlen = length(h)
+  n = split(csv, parts, ",")
+  for (i = 1; i <= n; i++) {
+    s = tolower(parts[i])
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", s)
+    if (s == "") continue
+    slen = length(s)
+    if (slen <= hlen && substr(h, hlen - slen + 1, slen) == s) return 1
+  }
+  return 0
+}
+function csv_prefix(haystack, csv,    n, i, parts, p, plen, h) {
+  if (csv == "") return 1
+  h = tolower(haystack)
+  n = split(csv, parts, ",")
+  for (i = 1; i <= n; i++) {
+    p = tolower(parts[i])
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", p)
+    if (p == "") continue
+    plen = length(p)
+    if (substr(h, 1, plen) == p) return 1
+  }
+  return 0
+}
+function csv_exact(haystack, csv,    n, i, parts, e, h) {
+  if (csv == "") return 1
+  h = tolower(haystack)
+  n = split(csv, parts, ",")
+  for (i = 1; i <= n; i++) {
+    e = tolower(parts[i])
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", e)
+    if (e != "" && h == e) return 1
+  }
+  return 0
+}
 BEGIN {
   while ((getline line < dir_class_file) > 0) {
     if (line ~ /^directory_path\|/) continue
@@ -258,9 +383,12 @@ BEGIN {
     rid[++rule_count] = a[1]
     rclass[rule_count] = a[2]
     rweight[rule_count] = a[3] + 0
-    rpath[rule_count] = a[4]
-    rmime[rule_count] = a[5]
-    rreason[rule_count] = a[6]
+    rpath_terms[rule_count] = a[4]
+    rfilename_terms[rule_count] = a[5]
+    rfilename_suffixes[rule_count] = a[6]
+    rmime_prefixes[rule_count] = a[7]
+    rmime_equals[rule_count] = a[8]
+    rreason[rule_count] = a[9]
   }
   close(rules_file)
 
@@ -289,8 +417,10 @@ BEGIN {
     c = rclass[i]
     ok = 1
 
-    if (rpath[i] != "" && path !~ rpath[i]) ok = 0
-    if (rmime[i] != "" && mime !~ rmime[i]) ok = 0
+    if (!csv_contains(path, rpath_terms[i])) ok = 0
+    if (!csv_contains(path, rfilename_terms[i])) ok = 0
+    if (!csv_suffix(path, rfilename_suffixes[i])) ok = 0
+    if (!(csv_prefix(mime, rmime_prefixes[i]) || csv_exact(mime, rmime_equals[i]))) ok = 0
 
     if (ok) {
       score[c] += rweight[i]
